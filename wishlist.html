@@ -437,9 +437,6 @@ textarea.input { min-height: 90px; resize: vertical; }
 </div>
 <script>
 (function(){
-  // Paste your Firebase Realtime Database URL here (no slash at the end).
-  var DB_URL='PASTE_YOUR_DATABASE_URL_HERE';
-
   var KEY='birthday-wishlist-reservations',res={};
   try{res=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
   function cache(){try{localStorage.setItem(KEY,JSON.stringify(res))}catch(e){}}
@@ -447,20 +444,18 @@ textarea.input { min-height: 90px; resize: vertical; }
     document.querySelectorAll('[data-reserve]').forEach(function(b){b.hidden=!!res[b.dataset.reserve]});
     document.querySelectorAll('[data-reserved]').forEach(function(d){d.hidden=!res[d.dataset.reserved]});
   }
-  var on=DB_URL.indexOf('http')===0;
   function load(){
-    if(!on)return;
-    fetch(DB_URL+'/reservations.json',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){res=d||{};cache();render()}).catch(function(){});
+    fetch('/api/reservations',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){res=d||{};cache();render()}).catch(function(){});
   }
   function send(id,reserved){
-    if(!on)return;
-    fetch(DB_URL+'/reservations/'+id+'.json',{method:reserved?'PUT':'DELETE',body:reserved?'true':null}).catch(load);
+    fetch('/api/reservations',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({id:id,reserved:reserved})})
+      .then(function(r){return r.json()}).then(function(d){res=d;cache();render()}).catch(load);
   }
   document.addEventListener('click',function(e){
     var r=e.target.closest('[data-reserve]'),f=e.target.closest('[data-free]');
-    if(r){res[r.dataset.reserve]=true;cache();render();send(r.dataset.reserve,true)}
-    if(f){delete res[f.dataset.free];cache();render();send(f.dataset.free,false)}
+    if(r){res[r.dataset.reserve]=true;render();send(r.dataset.reserve,true)}
+    if(f){delete res[f.dataset.free];render();send(f.dataset.free,false)}
   });
-  render();load();setInterval(load,15000);
+  render();load();setInterval(load,20000);
 })();
 </script></body></html>

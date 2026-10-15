@@ -1,0 +1,118 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}</style><title>Vyapak's Wishlist</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800&display=swap">
+<style>
+:root{
+  --bg:oklch(93% 0.02 83);
+  --fg:oklch(19% 0.012 70);
+  --muted:oklch(40% 0.03 75);
+  --card:oklch(96% 0.015 85);
+  --font:"Archivo",system-ui,sans-serif;
+  color-scheme:light;
+}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font-family:var(--font);font-size:15px;line-height:1.55}
+.stage{max-width:1120px;margin:0 auto;padding-inline:16px;padding-block:24px;min-height:100svh;display:flex;flex-direction:column}
+.top{display:flex;justify-content:space-between;align-items:center;padding-bottom:16px;border-bottom:2px solid var(--fg);font-size:13px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.dots{display:flex;gap:8px}
+.dots i{width:10px;height:10px;border:2px solid var(--fg);display:block}
+.dots i.on{background:var(--fg)}
+.step{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:32px;padding-block:48px}
+.step[hidden]{display:none}
+h1{font-weight:800;font-size:clamp(38px,9vw,104px);line-height:1;letter-spacing:-.025em;margin:0;max-width:16ch}
+.sub{font-size:16px;max-width:52ch;opacity:.8;margin:0}
+.btn{font:inherit;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:10px;padding:14px 28px;background:var(--fg);color:var(--bg);border:2px solid var(--fg);border-radius:0;transition:transform .15s ease,box-shadow .15s ease}
+.btn:hover{transform:translateY(-3px);box-shadow:0 6px 0 var(--muted)}
+.btn:focus-visible{outline:3px solid var(--fg);outline-offset:3px}
+.opts{display:flex;flex-direction:column;gap:12px;align-items:stretch;width:min(100%,460px)}
+.opt{background:transparent;color:var(--fg);justify-content:flex-start;text-align:left}
+.opt:hover{background:var(--card)}
+.notice{border:2px solid var(--fg);background:var(--card);padding:14px 16px;opacity:1;font-weight:600}
+.fade{animation:rise .7s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+.word{display:inline-block;white-space:nowrap}
+.ch{display:inline-block;opacity:0;animation:rise .9s ease forwards;animation-delay:calc(var(--i) * var(--sp,.22s) + .3s);white-space:pre}
+.btn-late{opacity:0;animation:rise .9s ease forwards;animation-delay:var(--d,0s)}
+@media (prefers-reduced-motion:reduce){.fade,.ch,.btn-late{animation:none;opacity:1}}
+</style></head><body>
+<div class="stage">
+  <div class="top"><span>Vyapak's Wishlist</span><span class="dots" id="dots" aria-hidden="true"><i></i><i></i><i></i></span></div>
+
+  <section class="step" id="s1">
+    <h1 data-reveal="The moment you've been waiting for is here." data-speed=".07"></h1>
+    <button type="button" class="btn btn-late" data-next>Next →</button>
+  </section>
+
+  <section class="step" id="s2" hidden>
+    <h1 data-reveal="Yes! The grapevines are correct." data-speed=".07"></h1>
+    <button type="button" class="btn btn-late" data-next>Next →</button>
+  </section>
+
+  <section class="step" id="s3" hidden>
+    <h1 data-reveal="The W I S H L I S T is here." data-words="The|W I S H L I S T|is|here." data-speed=".22"></h1>
+    <button type="button" class="btn btn-late" id="go" data-gate>View Wishlist →</button>
+  </section>
+
+  <section class="step" id="s4" hidden>
+    <h1 id="q">How excited are you to see it?</h1>
+    <div class="opts" id="opts">
+      <button type="button" class="btn opt" data-level="1">Just excited</button>
+      <button type="button" class="btn opt" data-level="2">Very excited</button>
+      <button type="button" class="btn opt" data-level="3">Beyond excited, can't even handle it</button>
+    </div>
+    <p class="sub notice" id="msg" role="status" hidden></p>
+    <a class="btn" id="enter" href="wishlist.html" hidden>Enter the wishlist →</a>
+  </section>
+</div>
+<script>
+(function(){
+  var steps=[].slice.call(document.querySelectorAll('.step')),dots=[].slice.call(document.querySelectorAll('#dots i')),cur=0;
+  function build(h){
+    var full=h.dataset.reveal,parts=h.dataset.words?h.dataset.words.split('|'):full.split(' '),sp=parseFloat(h.dataset.speed),k=0;
+    h.textContent='';h.setAttribute('aria-label',full);
+    parts.forEach(function(p,pi){
+      var w=document.createElement('span');w.className='word';w.setAttribute('aria-hidden','true');
+      for(var i=0;i<p.length;i++){
+        var c=document.createElement('span');c.className='ch';c.style.setProperty('--i',k++);c.textContent=p[i];w.appendChild(c);
+      }
+      k++;
+      h.appendChild(w);
+      if(pi<parts.length-1)h.appendChild(document.createTextNode(' '));
+    });
+    h.style.setProperty('--sp',sp+'s');
+    return k*sp+.9;
+  }
+  function reveal(n){
+    var h=steps[n].querySelector('[data-reveal]');if(!h)return;
+    var d=build(h),b=steps[n].querySelector('.btn-late');
+    if(b){b.style.animation='none';void b.offsetWidth;b.style.setProperty('--d',d+'s');b.style.animation=''}
+  }
+  function show(n){
+    cur=n;
+    steps.forEach(function(s,i){s.hidden=i!==n});
+    dots.forEach(function(d,i){d.className=i<=n?'on':''});
+    if(n===3){document.getElementById("q").textContent="How excited are you to see it?";document.getElementById("opts").hidden=false;document.getElementById("msg").hidden=true;document.getElementById("enter").hidden=true}
+    if(n<3)reveal(n);
+    var h=steps[n].querySelector('.btn');if(h&&n<2)h.focus({preventScroll:true});
+  }
+  document.addEventListener('click',function(e){
+    if(e.target.closest('[data-next]')&&cur<2)show(cur+1);
+    if(e.target.closest('[data-gate]'))show(3);
+    var o=e.target.closest('[data-level]');
+    if(o){
+      var msg=document.getElementById('msg'),q=document.getElementById('q');
+      if(o.dataset.level==='3'){
+        q.textContent='Good girl!';
+        document.getElementById('opts').hidden=true;
+        msg.hidden=true;
+        var en=document.getElementById('enter');en.hidden=false;en.focus({preventScroll:true});
+      }else{
+        msg.textContent=(o.dataset.level==='1'?'You must be Monika, right? ':'')+'Sorry, access is only for the "Beyond excited" crowd. Get more excited and come back later. Then pick again.';
+        msg.hidden=false;
+      }
+    }
+  });
+  show(0);
+})();
+</script>
+</body></html>
